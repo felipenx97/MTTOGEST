@@ -1,0 +1,1381 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MttoGest Biomédico</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#0f1117;color:#e2e8f0;min-height:100vh;font-size:14px}
+:root{
+  --bg0:#0f1117;--bg1:#161b27;--bg2:#1e2535;--bg3:#252d3d;--bg4:#2e3852;
+  --accent:#0d9488;--accent2:#2dd4bf;--accent3:#99f6e4;
+  --green:#10b981;--green2:#34d399;
+  --amber:#f59e0b;--amber2:#fbbf24;
+  --red:#ef4444;--red2:#f87171;
+  --blue:#3b82f6;--blue2:#60a5fa;
+  --purple:#8b5cf6;--purple2:#a78bfa;
+  --border:#2a3347;--border2:#374151;
+  --text1:#e2e8f0;--text2:#94a3b8;--text3:#64748b;
+  --radius:8px;--radius2:12px;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideIn{from{transform:translateX(120%);opacity:0}to{transform:translateX(0);opacity:1}}
+.spinner{width:38px;height:38px;border:3px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
+.fade-in{animation:fadeIn .25s ease}
+
+/* ── Layout ── */
+.app{display:flex;min-height:100vh}
+.sidebar{width:230px;background:var(--bg1);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:100;overflow:hidden}
+.sidebar-logo{padding:18px 16px 14px;border-bottom:1px solid var(--border)}
+.logo-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--accent),#0f766e);border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:10px}
+.logo-icon i{font-size:20px;color:#fff}
+.sidebar-logo h1{font-size:14px;font-weight:700;color:var(--accent2);letter-spacing:.3px}
+.sidebar-logo p{font-size:11px;color:var(--text3);margin-top:2px}
+.sidebar-nav{flex:1;padding:10px 8px;overflow-y:auto}
+.nav-section{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;padding:10px 8px 4px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:var(--radius);cursor:pointer;color:var(--text2);transition:all .15s;margin-bottom:2px;font-size:13px;position:relative}
+.nav-item:hover{background:var(--bg3);color:var(--text1)}
+.nav-item.active{background:rgba(13,148,136,.15);color:var(--accent2);font-weight:500}
+.nav-item.active::before{content:'';position:absolute;left:0;top:20%;bottom:20%;width:3px;background:var(--accent);border-radius:0 3px 3px 0}
+.nav-item i{font-size:17px;width:20px;flex-shrink:0}
+.nav-badge{margin-left:auto;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:600}
+.nb-amber{background:rgba(245,158,11,.2);color:var(--amber2)}
+.nb-red{background:rgba(239,68,68,.2);color:var(--red2)}
+.sidebar-footer{padding:12px;border-top:1px solid var(--border)}
+.db-pill{display:flex;align-items:center;gap:8px;padding:9px 11px;border-radius:var(--radius);background:var(--bg3)}
+.db-dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);flex-shrink:0}
+.main{margin-left:230px;flex:1;min-height:100vh;display:flex;flex-direction:column}
+.topbar{background:var(--bg1);border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;flex-shrink:0}
+.topbar-left{display:flex;align-items:center;gap:12px}
+.topbar-title{font-size:15px;font-weight:600;color:var(--text1)}
+.topbar-right{display:flex;align-items:center;gap:8px}
+.content{padding:24px;flex:1}
+
+/* ── Badges ── */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:500;white-space:nowrap}
+.b-teal{background:rgba(13,148,136,.15);color:var(--accent2)}
+.b-green{background:rgba(16,185,129,.15);color:var(--green2)}
+.b-amber{background:rgba(245,158,11,.15);color:var(--amber2)}
+.b-red{background:rgba(239,68,68,.15);color:var(--red2)}
+.b-blue{background:rgba(59,130,246,.15);color:var(--blue2)}
+.b-purple{background:rgba(139,92,246,.15);color:var(--purple2)}
+.b-gray{background:rgba(100,116,139,.15);color:var(--text2)}
+
+/* ── Cards ── */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius2);padding:18px}
+.card-sm{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius2);padding:14px}
+.card-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.card-title{font-size:13px;font-weight:600;color:var(--text1);display:flex;align-items:center;gap:7px}
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
+.stat{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius2);padding:16px;position:relative;overflow:hidden}
+.stat::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:var(--radius2) var(--radius2) 0 0}
+.stat-teal::after{background:var(--accent)}
+.stat-amber::after{background:var(--amber)}
+.stat-purple::after{background:var(--purple)}
+.stat-red::after{background:var(--red)}
+.stat-lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px}
+.stat-val{font-size:28px;font-weight:700;color:var(--text1);line-height:1;margin-bottom:4px}
+.stat-sub{font-size:11px;color:var(--text2)}
+.stat-ico{position:absolute;right:14px;top:50%;transform:translateY(-50%);width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:19px;opacity:.8}
+
+/* ── Grid layouts ── */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.g2-3{display:grid;grid-template-columns:2fr 1fr;gap:16px}
+
+/* ── Table ── */
+.tbl-wrap{overflow-x:auto}
+.tbl{width:100%;border-collapse:collapse;min-width:800px}
+.tbl th{text-align:left;padding:9px 12px;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid var(--border);white-space:nowrap;font-weight:600}
+.tbl td{padding:11px 12px;border-bottom:1px solid var(--border);font-size:13px;color:var(--text2);vertical-align:middle}
+.tbl tbody tr:last-child td{border-bottom:none}
+.tbl tbody tr:hover td{background:rgba(255,255,255,.02);color:var(--text1)}
+.mono{font-family:'Courier New',monospace;font-size:12px;color:var(--accent3);letter-spacing:.3px}
+
+/* ── Buttons ── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 15px;border-radius:var(--radius);border:none;cursor:pointer;font-size:13px;font-weight:500;transition:all .15s;white-space:nowrap}
+.btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{background:#0f766e}
+.btn-secondary{background:var(--bg3);color:var(--text1);border:1px solid var(--border2)}.btn-secondary:hover{background:var(--bg4)}
+.btn-success{background:var(--green);color:#fff}.btn-success:hover{background:#059669}
+.btn-danger{background:rgba(239,68,68,.1);color:var(--red2);border:1px solid rgba(239,68,68,.2)}.btn-danger:hover{background:rgba(239,68,68,.2)}
+.btn-sm{padding:5px 11px;font-size:12px}
+.btn-xs{padding:3px 8px;font-size:11px}
+.btn-icon{padding:6px;border-radius:var(--radius);background:var(--bg3);border:1px solid var(--border);color:var(--text2);cursor:pointer;font-size:15px;display:inline-flex;align-items:center;justify-content:center;transition:all .15s;line-height:1}
+.btn-icon:hover{background:var(--bg4);color:var(--text1)}
+.icon-danger{border-color:rgba(239,68,68,.25)!important;color:var(--red2)!important}.icon-danger:hover{background:rgba(239,68,68,.1)!important}
+.icon-success{border-color:rgba(16,185,129,.25)!important;color:var(--green2)!important}.icon-success:hover{background:rgba(16,185,129,.1)!important}
+
+/* ── Forms ── */
+.f-group{margin-bottom:13px}
+.f-label{display:block;font-size:11px;color:var(--text2);margin-bottom:5px;font-weight:600;text-transform:uppercase;letter-spacing:.4px}
+.f-input{width:100%;padding:8px 12px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius);color:var(--text1);font-size:13px;outline:none;transition:border .15s}
+.f-input:focus{border-color:var(--accent);box-shadow:0 0 0 2px rgba(13,148,136,.1)}
+.f-select{width:100%;padding:8px 12px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius);color:var(--text1);font-size:13px;outline:none;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center}
+.f-select:focus{border-color:var(--accent)}
+.f-textarea{width:100%;padding:9px 12px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius);color:var(--text1);font-size:13px;outline:none;resize:vertical;min-height:80px;font-family:inherit;line-height:1.5}
+.f-textarea:focus{border-color:var(--accent)}
+.f-section{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--accent2);margin:18px 0 10px;padding-bottom:7px;border-bottom:1px solid rgba(13,148,136,.2);display:flex;align-items:center;gap:6px}
+.f-section i{font-size:13px}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+
+/* ── Modal ── */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(2px)}
+.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:16px;width:100%;max-width:600px;max-height:92vh;overflow-y:auto;animation:fadeIn .2s ease}
+.modal-lg{max-width:700px}
+.modal-hdr{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--bg2);z-index:1;border-radius:16px 16px 0 0}
+.modal-hdr-title{display:flex;align-items:center;gap:10px}
+.modal-hdr-title i{font-size:19px;color:var(--accent2)}
+.modal-hdr-title span{font-size:15px;font-weight:600;color:var(--text1)}
+.modal-body{padding:20px}
+.modal-ftr{padding:14px 20px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;background:var(--bg2);border-radius:0 0 16px 16px}
+
+/* ── Upload zone ── */
+.upload-zone{border:2px dashed var(--border2);border-radius:var(--radius2);padding:28px 20px;text-align:center;cursor:pointer;transition:all .2s}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--accent);background:rgba(13,148,136,.05)}
+.upload-zone .uz-icon{font-size:30px;color:var(--text3);display:block;margin-bottom:8px}
+.upload-zone p{color:var(--text2);font-size:13px;margin-bottom:3px}
+.upload-zone span{color:var(--text3);font-size:11px}
+.prog-bar{width:100%;height:4px;background:var(--bg4);border-radius:2px;margin-top:6px;overflow:hidden}
+.prog-fill{height:100%;border-radius:2px;background:var(--accent);transition:width .3s}
+.file-row{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg3);border-radius:var(--radius);border:1px solid var(--border)}
+
+/* ── Misc ── */
+.divider{height:1px;background:var(--border);margin:14px 0}
+.empty{text-align:center;padding:44px 20px}
+.empty i{font-size:44px;color:var(--text3);display:block;margin-bottom:12px}
+.empty p{color:var(--text2);font-size:14px;margin-bottom:4px}
+.empty span{color:var(--text3);font-size:12px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.chip{padding:5px 13px;border-radius:20px;font-size:12px;cursor:pointer;border:1px solid var(--border2);color:var(--text2);transition:all .15s}
+.chip:hover{background:var(--bg3);border-color:var(--border2)}.chip.on{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:500}
+.search-wrap{display:flex;align-items:center;gap:8px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius);padding:7px 12px;flex:1;max-width:340px}
+.search-wrap i{color:var(--text3);font-size:16px;flex-shrink:0}
+.search-wrap input{background:none;border:none;color:var(--text1);font-size:13px;outline:none;flex:1;min-width:0}
+.sede-tag{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:5px;font-size:11px;font-weight:500;background:rgba(13,148,136,.1);color:var(--accent2);white-space:nowrap}
+.sede-tag i{font-size:11px}
+.status-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:6px;flex-shrink:0}
+.sd-green{background:var(--green);box-shadow:0 0 4px rgba(16,185,129,.5)}
+.sd-amber{background:var(--amber)}
+.sd-red{background:var(--red)}
+.sd-gray{background:var(--text3)}
+.obs-card{padding:12px 14px;background:var(--bg3);border-radius:var(--radius);margin-bottom:10px;border-left:3px solid var(--accent)}
+.obs-card.al{border-left-color:var(--red)}
+.obs-card.ap{border-left-color:var(--green)}
+.obs-card.sg{border-left-color:var(--amber)}
+.obs-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px}
+.obs-autor{font-size:12px;font-weight:600;color:var(--accent2)}
+.obs-date{font-size:11px;color:var(--text3)}
+.obs-text{font-size:13px;color:var(--text2);line-height:1.55}
+.obs-meta{font-size:11px;color:var(--text3);margin-top:5px;display:flex;align-items:center;gap:8px}
+.notif{position:fixed;bottom:20px;right:20px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius2);padding:13px 16px;display:flex;align-items:center;gap:10px;z-index:400;min-width:290px;max-width:380px;animation:slideIn .3s ease;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+.notif-ico{width:34px;height:34px;border-radius:var(--radius);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.activity-row{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
+.activity-row:last-child{border-bottom:none}
+.act-ico{width:32px;height:32px;border-radius:var(--radius);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;margin-top:2px}
+.act-body p{font-size:13px;color:var(--text1);line-height:1.4}
+.act-body span{font-size:11px;color:var(--text3)}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.detail-item .dl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}
+.detail-item .dv{font-size:13px;color:var(--text1);font-weight:500}
+.progress-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.progress-row .pr-label{font-size:12px;color:var(--text2);width:180px;flex-shrink:0}
+.progress-row .pr-bar{flex:1;background:var(--bg4);border-radius:3px;height:6px;overflow:hidden}
+.progress-row .pr-fill{height:100%;border-radius:3px;transition:width .4s}
+.progress-row .pr-count{font-size:11px;color:var(--text3);width:32px;text-align:right}
+.drive-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)}
+.drive-row:last-child{border-bottom:none}
+.drive-folder-row{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:var(--radius);cursor:pointer;transition:background .1s}
+.drive-folder-row:hover{background:var(--bg3)}
+.sub-folder{padding-left:22px}
+.flex{display:flex}.ic{align-items:center}.jb{justify-content:space-between}.g6{gap:6px}.g8{gap:8px}.g10{gap:10px}.g12{gap:12px}.f1{flex:1}
+.mb8{margin-bottom:8px}.mb12{margin-bottom:12px}.mb16{margin-bottom:16px}.mb20{margin-bottom:20px}.mt8{margin-top:8px}.mt12{margin-top:12px}
+.w100{width:100%}.text-right{text-align:right}
+</style>
+</head>
+<body>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/tabler-icons.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<div id="root"></div>
+<script type="text/babel">
+const {useState,useEffect,useRef,useCallback}=React;
+
+// ── Supabase ──────────────────────────────────────────────────────────────────
+const db=window.supabase.createClient(
+  'https://dxsnjwteujjissepawtz.supabase.co',
+  'sb_publishable_C2NY5DxI6oxQV9EYPWC99A_7MLMpm5F'
+);
+
+// ── Constants ─────────────────────────────────────────────────────────────────
+const CATS=['Apoyo vital','Diagnóstico por imagen','Monitoreo','Laboratorio','Quirúrgico','Esterilización','Rehabilitación','Terapia','Electromedicina','Otro'];
+const ESTADOS=['Operativo','En mantenimiento','En calibración','Fuera de servicio','Dado de baja'];
+const TIPOS_MTTO=['Preventivo','Correctivo','Predictivo','Calibración','Verificación','Instalación'];
+const TIPOS_OBS=['Comentario','Alerta','Aprobación','Seguimiento','Solicitud'];
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+const uid=p=>`${p}${Date.now()}`;
+const fmtM=v=>`$${(v/1000000).toFixed(1)}M`;
+const daysTo=f=>Math.round((new Date(f)-new Date())/86400000);
+const mapEq=r=>r?({...r,ultimoMtto:r.ultimo_mtto,proximoMtto:r.proximo_mtto}):r;
+const mapCt=r=>r?({...r,equipos:r.equipos||[]}):r;
+const mapRp=r=>r?({...r,archivoUrl:r.archivo_url}):r;
+
+const estadoColor=e=>{
+  if(e==='Operativo') return 'sd-green';
+  if(e==='En mantenimiento'||e==='En calibración') return 'sd-amber';
+  if(e==='Fuera de servicio'||e==='Dado de baja') return 'sd-red';
+  return 'sd-gray';
+};
+const estadoBadge=e=>{
+  if(e==='Operativo') return 'b-green';
+  if(e==='En mantenimiento'||e==='En calibración') return 'b-amber';
+  return 'b-red';
+};
+const diasBadge=d=>d<0?'b-red':d<30?'b-amber':'b-green';
+const obsClass=t=>t==='Alerta'?'al':t==='Aprobación'?'ap':t==='Seguimiento'?'sg':'';
+
+// ── App ───────────────────────────────────────────────────────────────────────
+function App(){
+  const [view,setView]=useState('dashboard');
+  const [data,setData]=useState({equipos:[],proveedores:[],contratos:[],reportes:[],observaciones:[]});
+  const [loading,setLoading]=useState(true);
+  const [modal,setModal]=useState(null);
+  const [notif,setNotif]=useState(null);
+  const [search,setSearch]=useState('');
+  const [chip,setChip]=useState('Todos');
+
+  const toast=(msg,type='ok')=>{setNotif({msg,type});setTimeout(()=>setNotif(null),3500)};
+
+  const load=useCallback(async()=>{
+    setLoading(true);
+    try{
+      const[eq,pv,ct,rp,ob]=await Promise.all([
+        db.from('equipos').select('*').order('created_at'),
+        db.from('proveedores').select('*').order('nombre'),
+        db.from('contratos').select('*').order('created_at'),
+        db.from('reportes').select('*').order('created_at',{ascending:false}),
+        db.from('observaciones').select('*').order('created_at',{ascending:false}),
+      ]);
+      setData({
+        equipos:(eq.data||[]).map(mapEq),
+        proveedores:pv.data||[],
+        contratos:(ct.data||[]).map(mapCt),
+        reportes:(rp.data||[]).map(mapRp),
+        observaciones:ob.data||[],
+      });
+    }catch(e){toast('Error cargando datos: '+e.message,'err')}
+    setLoading(false);
+  },[]);
+
+  useEffect(()=>{load()},[load]);
+
+  // CRUD equipos
+  const saveEquipo=async(eq,isEdit)=>{
+    const payload={
+      nombre:eq.nombre,codigo:eq.codigo,
+      sede:eq.sede||null,ubicacion:eq.ubicacion||null,
+      serial:eq.serial||null,modelo:eq.modelo||null,
+      fabricante:eq.fabricante||null,pais_origen:eq.pais_origen||null,
+      anio_fabricacion:eq.anio_fabricacion||null,registro_invima:eq.registro_invima||null,
+      categoria:eq.categoria,estado:eq.estado,riesgo:eq.riesgo||null,
+      proveedor:eq.proveedor||null,contrato:eq.contrato||null,
+      ultimo_mtto:eq.ultimoMtto||null,proximo_mtto:eq.proximoMtto||null,
+    };
+    let error;
+    if(isEdit){
+      // sync contrato arrays
+      const orig=data.equipos.find(e=>e.id===eq.id);
+      if(orig?.contrato&&orig.contrato!==eq.contrato){
+        const old=data.contratos.find(c=>c.id===orig.contrato);
+        if(old) await db.from('contratos').update({equipos:(old.equipos||[]).filter(x=>x!==eq.id)}).eq('id',orig.contrato);
+      }
+      if(eq.contrato&&eq.contrato!==orig?.contrato){
+        const nc=data.contratos.find(c=>c.id===eq.contrato);
+        if(nc) await db.from('contratos').update({equipos:[...(nc.equipos||[]),eq.id]}).eq('id',eq.contrato);
+      }
+      ({error}=await db.from('equipos').update(payload).eq('id',eq.id));
+    }else{
+      const id=uid('E');
+      ({error}=await db.from('equipos').insert({id,...payload}));
+      if(!error&&eq.contrato){
+        const ct=data.contratos.find(c=>c.id===eq.contrato);
+        if(ct) await db.from('contratos').update({equipos:[...(ct.equipos||[]),id]}).eq('id',eq.contrato);
+      }
+    }
+    if(error){toast('Error: '+error.message,'err');return}
+    setModal(null);toast(isEdit?'Equipo actualizado':'Equipo registrado correctamente');load();
+  };
+
+  const delEquipo=async(id)=>{
+    const eq=data.equipos.find(e=>e.id===id);
+    if(eq?.contrato){
+      const ct=data.contratos.find(c=>c.id===eq.contrato);
+      if(ct) await db.from('contratos').update({equipos:(ct.equipos||[]).filter(x=>x!==id)}).eq('id',eq.contrato);
+    }
+    const{error}=await db.from('equipos').delete().eq('id',id);
+    if(error){toast('Error: '+error.message,'err');return}
+    toast('Equipo eliminado','info');load();
+  };
+
+  // CRUD reportes
+  const saveReporte=async(r)=>{
+    let archivo_url=null;
+    const nombre=r.archivo?.name||'reporte.pdf';
+    if(r.archivo){
+      const path=`${r.contrato}/${Date.now()}_${r.archivo.name.replace(/\s/g,'_')}`;
+      const{error:ue}=await db.storage.from('reportes-pdf').upload(path,r.archivo);
+      if(!ue){const{data:ud}=db.storage.from('reportes-pdf').getPublicUrl(path);archivo_url=ud.publicUrl}
+    }
+    const prov=data.contratos.find(c=>c.id===r.contrato)?.proveedor||'';
+    const{error}=await db.from('reportes').insert({
+      id:uid('R'),contrato:r.contrato,equipo:r.equipo,
+      proveedor:prov,fecha:r.fecha,tipo:r.tipo,
+      estado:'Pendiente revisión',archivo:nombre,archivo_url,notas:r.notas||null,
+    });
+    if(error){toast('Error: '+error.message,'err');return}
+    setModal(null);toast('Reporte cargado y guardado ✓');load();
+  };
+
+  const aprobar=async(id)=>{
+    const{error}=await db.from('reportes').update({estado:'Aprobado'}).eq('id',id);
+    if(error){toast('Error: '+error.message,'err');return}
+    toast('Reporte aprobado');load();
+  };
+
+  // CRUD observaciones
+  const saveObs=async(o)=>{
+    const{error}=await db.from('observaciones').insert({
+      id:uid('O'),equipo:o.equipo,reporte:o.reporte||null,
+      autor:o.autor,fecha:new Date().toISOString().split('T')[0],
+      texto:o.texto,tipo:o.tipo||'Comentario',
+    });
+    if(error){toast('Error: '+error.message,'err');return}
+    setModal(null);toast('Observación registrada');load();
+  };
+
+  if(loading) return(
+    <div style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',height:'100vh',gap:16,background:'var(--bg0)'}}>
+      <div className="spinner"></div>
+      <p style={{color:'var(--text2)',fontSize:14}}>Cargando MttoGest Biomédico...</p>
+      <p style={{color:'var(--text3)',fontSize:12}}>Conectando con Supabase</p>
+    </div>
+  );
+
+  const pendientes=data.reportes.filter(r=>r.estado==='Pendiente revisión').length;
+  const alertas=data.observaciones.filter(o=>o.tipo==='Alerta').length;
+
+  const nav=[
+    {id:'dashboard',label:'Panel de Control',  icon:'ti-layout-dashboard'},
+    {id:'equipos',  label:'Equipos Biomédicos', icon:'ti-heart-rate-monitor'},
+    {id:'contratos',label:'Contratos de Mtto',  icon:'ti-file-certificate'},
+    {id:'reportes', label:'Reportes de Mtto',   icon:'ti-clipboard-list'},
+    {id:'obs',      label:'Observaciones',       icon:'ti-message-2'},
+    {id:'drive',    label:'Archivos / Storage',  icon:'ti-database'},
+  ];
+
+  const titles={dashboard:'Panel de Control',equipos:'Equipos Biomédicos',contratos:'Contratos de Mantenimiento',reportes:'Reportes de Mantenimiento',obs:'Observaciones y Novedades',drive:'Archivos y Storage'};
+
+  const renderView=()=>{
+    switch(view){
+      case 'dashboard': return <Dashboard data={data} setView={setView}/>;
+      case 'equipos':   return <Equipos data={data} search={search} setSearch={setSearch} chip={chip} setChip={setChip} setModal={setModal} del={delEquipo}/>;
+      case 'contratos': return <Contratos data={data}/>;
+      case 'reportes':  return <Reportes data={data} setModal={setModal} aprobar={aprobar}/>;
+      case 'obs':       return <Observaciones data={data} setModal={setModal}/>;
+      case 'drive':     return <Drive data={data}/>;
+      default:          return null;
+    }
+  };
+
+  return(
+    <div className="app">
+      <aside className="sidebar">
+        <div className="sidebar-logo">
+          <div className="logo-icon"><i className="ti ti-heart-rate-monitor"></i></div>
+          <h1>MttoGest Biomédico</h1>
+          <p>Gestión de Equipos y Contratos</p>
+        </div>
+        <nav className="sidebar-nav">
+          <div className="nav-section">Módulos</div>
+          {nav.map(n=>(
+            <div key={n.id} className={`nav-item${view===n.id?' active':''}`} onClick={()=>setView(n.id)}>
+              <i className={`ti ${n.icon}`}></i>
+              <span>{n.label}</span>
+              {n.id==='reportes'&&pendientes>0&&<span className="nav-badge nb-amber">{pendientes}</span>}
+              {n.id==='obs'&&alertas>0&&<span className="nav-badge nb-red">{alertas}</span>}
+            </div>
+          ))}
+        </nav>
+        <div className="sidebar-footer">
+          <div className="db-pill">
+            <div className="db-dot"></div>
+            <div>
+              <p style={{fontSize:11,fontWeight:600,color:var(--text1)}}>&nbsp;</p>
+              <p style={{fontSize:11,fontWeight:600,color:'#e2e8f0'}}>Supabase · En línea</p>
+              <p style={{fontSize:10,color:'var(--text3)'}}>{data.equipos.length} equipos · {data.reportes.length} reportes</p>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <main className="main">
+        <div className="topbar">
+          <div className="topbar-left">
+            <span className="topbar-title">{titles[view]}</span>
+          </div>
+          <div className="topbar-right">
+            {view==='reportes'&&<button className="btn btn-primary btn-sm" onClick={()=>setModal('upload')}><i className="ti ti-upload"></i>Cargar reporte</button>}
+            {view==='equipos' &&<button className="btn btn-primary btn-sm" onClick={()=>setModal({t:'eq'})}><i className="ti ti-plus"></i>Nuevo equipo</button>}
+            {view==='obs'     &&<button className="btn btn-primary btn-sm" onClick={()=>setModal('obs')}><i className="ti ti-plus"></i>Nueva observación</button>}
+            <button className="btn-icon" onClick={load} title="Recargar datos"><i className="ti ti-refresh"></i></button>
+          </div>
+        </div>
+        <div className="content fade-in">
+          {renderView()}
+        </div>
+      </main>
+
+      {/* Modales */}
+      {modal==='upload'         &&<MUpload    data={data} close={()=>setModal(null)} save={saveReporte}/>}
+      {modal==='obs'            &&<MObs       data={data} close={()=>setModal(null)} save={saveObs}/>}
+      {modal?.t==='eq'          &&<MEquipo    data={data} eq={modal.eq} close={()=>setModal(null)} save={eq=>saveEquipo(eq,!!modal.eq)}/>}
+      {modal?.t==='rep'         &&<MReporte   rep={modal.rep} data={data} close={()=>setModal(null)} aprobar={aprobar} saveObs={saveObs}/>}
+      {modal?.t==='deq'         &&<MDetalleEq eq={modal.eq} data={data} close={()=>setModal(null)} edit={()=>setModal({t:'eq',eq:modal.eq})}/>}
+
+      {notif&&(
+        <div className="notif">
+          <div className="notif-ico" style={{background:notif.type==='ok'?'rgba(16,185,129,.2)':notif.type==='err'?'rgba(239,68,68,.2)':'rgba(13,148,136,.2)'}}>
+            <i className={`ti ${notif.type==='ok'?'ti-check':notif.type==='err'?'ti-alert-circle':'ti-info-circle'}`}
+               style={{color:notif.type==='ok'?'var(--green2)':notif.type==='err'?'var(--red2)':'var(--accent2)'}}></i>
+          </div>
+          <p style={{fontSize:13,fontWeight:500,color:'var(--text1)',flex:1,lineHeight:1.4}}>{notif.msg}</p>
+          <i className="ti ti-x" style={{color:'var(--text3)',cursor:'pointer',fontSize:15}} onClick={()=>setNotif(null)}></i>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── DASHBOARD ─────────────────────────────────────────────────────────────────
+function Dashboard({data,setView}){
+  const pendientes=data.reportes.filter(r=>r.estado==='Pendiente revisión').length;
+  const alertas=data.observaciones.filter(o=>o.tipo==='Alerta').length;
+  const sedes=[...new Set(data.equipos.map(e=>e.sede).filter(Boolean))];
+  const prox=data.equipos.filter(e=>e.proximoMtto).sort((a,b)=>new Date(a.proximoMtto)-new Date(b.proximoMtto)).slice(0,6);
+  const ultObs=data.observaciones.slice(0,5);
+
+  return(
+    <div>
+      {/* KPIs */}
+      <div className="stat-grid">
+        <div className="stat stat-teal">
+          <div className="stat-lbl">Equipos operativos</div>
+          <div className="stat-val">{data.equipos.filter(e=>e.estado==='Operativo').length}</div>
+          <div className="stat-sub">de {data.equipos.length} equipos totales</div>
+          <div className="stat-ico" style={{background:'rgba(13,148,136,.15)'}}><i className="ti ti-heart-rate-monitor" style={{color:'var(--accent2)'}}></i></div>
+        </div>
+        <div className="stat stat-amber">
+          <div className="stat-lbl">Reportes pendientes</div>
+          <div className="stat-val">{pendientes}</div>
+          <div className="stat-sub">{pendientes>0?'Esperan revisión y aprobación':'Todos al día'}</div>
+          <div className="stat-ico" style={{background:'rgba(245,158,11,.15)'}}><i className="ti ti-clipboard-list" style={{color:'var(--amber2)'}}></i></div>
+        </div>
+        <div className="stat stat-purple">
+          <div className="stat-lbl">Contratos activos</div>
+          <div className="stat-val">{data.contratos.filter(c=>c.estado==='Activo').length}</div>
+          <div className="stat-sub">{fmtM(data.contratos.reduce((s,c)=>s+(c.valor||0),0))} en contratos</div>
+          <div className="stat-ico" style={{background:'rgba(139,92,246,.15)'}}><i className="ti ti-file-certificate" style={{color:'var(--purple2)'}}></i></div>
+        </div>
+        <div className="stat stat-red">
+          <div className="stat-lbl">Alertas abiertas</div>
+          <div className="stat-val">{alertas}</div>
+          <div className="stat-sub">{data.equipos.filter(e=>e.estado==='En mantenimiento').length} en mantenimiento</div>
+          <div className="stat-ico" style={{background:'rgba(239,68,68,.15)'}}><i className="ti ti-alert-triangle" style={{color:'var(--red2)'}}></i></div>
+        </div>
+      </div>
+
+      <div className="g2" style={{marginBottom:20}}>
+        {/* Próximos mantenimientos */}
+        <div className="card">
+          <div className="card-hdr">
+            <span className="card-title"><i className="ti ti-calendar-clock" style={{color:'var(--accent2)'}}></i>Próximos mantenimientos</span>
+            <button className="btn btn-secondary btn-sm" onClick={()=>setView('equipos')}>Ver todos</button>
+          </div>
+          {prox.length===0?<div className="empty"><i className="ti ti-calendar"></i><p>Sin mantenimientos programados</p></div>:(
+            <table className="tbl" style={{minWidth:'unset'}}>
+              <thead><tr><th>Equipo</th><th>Sede</th><th>Fecha</th><th>Estado</th></tr></thead>
+              <tbody>
+                {prox.map(e=>{
+                  const d=daysTo(e.proximoMtto);
+                  return(
+                    <tr key={e.id}>
+                      <td>
+                        <div style={{fontWeight:500,color:'var(--text1)',fontSize:12,marginBottom:2}}>{e.nombre.substring(0,32)}</div>
+                        <div className="mono">{e.codigo}</div>
+                      </td>
+                      <td>{e.sede?<span className="sede-tag"><i className="ti ti-building-hospital"></i>{e.sede}</span>:<span style={{color:'var(--text3)'}}>—</span>}</td>
+                      <td style={{fontSize:12,whiteSpace:'nowrap'}}>{e.proximoMtto}</td>
+                      <td><span className={`badge ${diasBadge(d)}`}>{d<0?'Vencido':d===0?'Hoy':d<30?`${d}d`:'OK'}</span></td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
+        </div>
+
+        {/* Últimas observaciones */}
+        <div className="card">
+          <div className="card-hdr">
+            <span className="card-title"><i className="ti ti-message-2" style={{color:'var(--accent2)'}}></i>Últimas novedades</span>
+            <button className="btn btn-secondary btn-sm" onClick={()=>setView('obs')}>Ver todas</button>
+          </div>
+          {ultObs.length===0?<div className="empty"><i className="ti ti-message-2"></i><p>Sin observaciones</p></div>:
+          ultObs.map(o=>{
+            const eq=data.equipos.find(e=>e.id===o.equipo);
+            return(
+              <div key={o.id} className="activity-row">
+                <div className="act-ico" style={{background:o.tipo==='Alerta'?'rgba(239,68,68,.15)':o.tipo==='Aprobación'?'rgba(16,185,129,.15)':'rgba(13,148,136,.15)'}}>
+                  <i className={`ti ${o.tipo==='Alerta'?'ti-alert-triangle':o.tipo==='Aprobación'?'ti-check':'ti-message-2'}`}
+                     style={{color:o.tipo==='Alerta'?'var(--red2)':o.tipo==='Aprobación'?'var(--green2)':'var(--accent2)'}}></i>
+                </div>
+                <div className="act-body">
+                  <p>{o.texto.substring(0,65)}{o.texto.length>65?'…':''}</p>
+                  <span>{eq?.codigo||'—'} · {o.autor} · {o.fecha}</span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Por categoría */}
+      <div className="g2" style={{marginBottom:20}}>
+        <div className="card">
+          <div className="card-hdr"><span className="card-title"><i className="ti ti-chart-bar" style={{color:'var(--accent2)'}}></i>Estado por categoría biomédica</span></div>
+          {CATS.map(cat=>{
+            const eqs=data.equipos.filter(e=>e.categoria===cat);
+            if(!eqs.length) return null;
+            const ok=eqs.filter(e=>e.estado==='Operativo').length;
+            const pct=Math.round(ok/eqs.length*100);
+            return(
+              <div key={cat} className="progress-row">
+                <span className="pr-label">{cat}</span>
+                <div className="pr-bar"><div className="pr-fill" style={{width:`${pct}%`,background:pct===100?'var(--green)':pct>50?'var(--accent)':'var(--amber)'}}></div></div>
+                <span className="pr-count">{ok}/{eqs.length}</span>
+              </div>
+            );
+          })}
+          {!data.equipos.length&&<div className="empty"><i className="ti ti-heart-rate-monitor"></i><p>No hay equipos registrados</p></div>}
+        </div>
+
+        {/* Por sede */}
+        <div className="card">
+          <div className="card-hdr"><span className="card-title"><i className="ti ti-building-hospital" style={{color:'var(--accent2)'}}></i>Resumen por sede</span></div>
+          {sedes.length===0?<div className="empty"><i className="ti ti-building-hospital"></i><p>Sin sedes registradas</p></div>:
+          <div style={{display:'grid',gap:10}}>
+            {sedes.map(s=>{
+              const eqs=data.equipos.filter(e=>e.sede===s);
+              const ok=eqs.filter(e=>e.estado==='Operativo').length;
+              const mtto=eqs.filter(e=>e.estado==='En mantenimiento'||e.estado==='En calibración').length;
+              const fuera=eqs.filter(e=>e.estado==='Fuera de servicio'||e.estado==='Dado de baja').length;
+              return(
+                <div key={s} style={{background:'var(--bg3)',borderRadius:'var(--radius)',padding:'12px 14px'}}>
+                  <div className="flex ic jb mb8">
+                    <span className="sede-tag"><i className="ti ti-building-hospital"></i>{s}</span>
+                    <span style={{fontSize:12,color:'var(--text2)',fontWeight:600}}>{eqs.length} equipos</span>
+                  </div>
+                  <div className="flex g8">
+                    <span className="badge b-green"><i className="ti ti-check"></i>{ok} op.</span>
+                    {mtto>0&&<span className="badge b-amber"><i className="ti ti-tool"></i>{mtto} mtto</span>}
+                    {fuera>0&&<span className="badge b-red"><i className="ti ti-x"></i>{fuera} fuera</span>}
+                  </div>
+                </div>
+              );
+            })}
+          </div>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── EQUIPOS ───────────────────────────────────────────────────────────────────
+function Equipos({data,search,setSearch,chip,setChip,setModal,del}){
+  const sedes=['Todos',...new Set(data.equipos.map(e=>e.sede).filter(Boolean))];
+  const cats=['Todos',...new Set(data.equipos.map(e=>e.categoria).filter(Boolean))];
+  const [filtroCat,setFiltroCat]=useState('Todos');
+
+  const filtered=data.equipos.filter(e=>{
+    const ms=chip==='Todos'||e.sede===chip;
+    const mc=filtroCat==='Todos'||e.categoria===filtroCat;
+    const mq=!search||[e.nombre,e.codigo,e.serial,e.modelo,e.fabricante,e.registro_invima,e.ubicacion]
+      .some(v=>v&&v.toLowerCase().includes(search.toLowerCase()));
+    return ms&&mc&&mq;
+  });
+
+  return(
+    <div>
+      <div className="flex ic jb mb16" style={{gap:12,flexWrap:'wrap'}}>
+        <div className="search-wrap">
+          <i className="ti ti-search"></i>
+          <input placeholder="Buscar nombre, código, serial, modelo, INVIMA…" value={search} onChange={e=>setSearch(e.target.value)}/>
+          {search&&<i className="ti ti-x" style={{cursor:'pointer',color:'var(--text3)',fontSize:14}} onClick={()=>setSearch('')}></i>}
+        </div>
+        <span style={{fontSize:12,color:'var(--text3)',whiteSpace:'nowrap'}}>{filtered.length} equipos</span>
+      </div>
+
+      <div style={{marginBottom:8}}>
+        <div style={{fontSize:10,color:'var(--text3)',textTransform:'uppercase',letterSpacing:'.6px',marginBottom:6}}>Filtrar por sede</div>
+        <div className="chips">{sedes.map(s=><div key={s} className={`chip${chip===s?' on':''}`} onClick={()=>setChip(s)}>{s}</div>)}</div>
+      </div>
+      <div style={{marginBottom:16}}>
+        <div style={{fontSize:10,color:'var(--text3)',textTransform:'uppercase',letterSpacing:'.6px',marginBottom:6}}>Filtrar por categoría</div>
+        <div className="chips">{cats.map(c=><div key={c} className={`chip${filtroCat===c?' on':''}`} onClick={()=>setFiltroCat(c)}>{c}</div>)}</div>
+      </div>
+
+      <div className="card">
+        <div className="tbl-wrap">
+          <table className="tbl">
+            <thead>
+              <tr>
+                <th>Código</th>
+                <th>Nombre del equipo</th>
+                <th>Modelo / Fabricante</th>
+                <th>Serial / INVIMA</th>
+                <th>Sede</th>
+                <th>Ubicación</th>
+                <th>Categoría</th>
+                <th>Estado</th>
+                <th>Próx. Mtto</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map(e=>{
+                const d=e.proximoMtto?daysTo(e.proximoMtto):null;
+                return(
+                  <tr key={e.id}>
+                    <td><span className="mono">{e.codigo}</span></td>
+                    <td>
+                      <div style={{fontWeight:500,color:'var(--text1)',fontSize:13}}>{e.nombre}</div>
+                      <div style={{fontSize:11,color:'var(--text3)',marginTop:2}}>{e.proveedor||'Sin proveedor asignado'}</div>
+                    </td>
+                    <td>
+                      <div style={{fontSize:12,color:'var(--text1)',fontWeight:500}}>{e.modelo||'—'}</div>
+                      <div style={{fontSize:11,color:'var(--text3)'}}>{e.fabricante||''}</div>
+                    </td>
+                    <td>
+                      <div className="mono" style={{fontSize:11}}>{e.serial||'—'}</div>
+                      {e.registro_invima&&<div style={{fontSize:10,color:'var(--blue2)',marginTop:2}}>INVIMA: {e.registro_invima}</div>}
+                    </td>
+                    <td>{e.sede?<span className="sede-tag"><i className="ti ti-building-hospital"></i>{e.sede}</span>:<span style={{color:'var(--text3)'}}>—</span>}</td>
+                    <td style={{fontSize:12,color:'var(--text3)',maxWidth:140}}>{e.ubicacion||'—'}</td>
+                    <td><span className="badge b-teal">{e.categoria}</span></td>
+                    <td style={{whiteSpace:'nowrap'}}>
+                      <span className={`status-dot ${estadoColor(e.estado)}`}></span>
+                      <span style={{fontSize:12}}>{e.estado}</span>
+                    </td>
+                    <td>{d!==null?<span className={`badge ${diasBadge(d)}`}>{d<0?'Vencido':d===0?'Hoy':`${d}d`}</span>:'—'}</td>
+                    <td>
+                      <div className="flex g8" style={{justifyContent:'flex-end'}}>
+                        <button className="btn-icon" title="Ver detalle" onClick={()=>setModal({t:'deq',eq:e})}><i className="ti ti-eye"></i></button>
+                        <button className="btn-icon" title="Editar" onClick={()=>setModal({t:'eq',eq:e})}><i className="ti ti-edit"></i></button>
+                        <button className="btn-icon icon-danger" title="Eliminar" onClick={()=>{if(confirm(`¿Eliminar "${e.nombre}"? Esta acción no se puede deshacer.`))del(e.id)}}><i className="ti ti-trash"></i></button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+          {filtered.length===0&&<div className="empty"><i className="ti ti-heart-rate-monitor"></i><p>No se encontraron equipos</p><span>Ajusta los filtros o registra un nuevo equipo</span></div>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── MODAL EQUIPO ──────────────────────────────────────────────────────────────
+function MEquipo({data,eq,close,save}){
+  const blank={nombre:'',codigo:'',sede:'',ubicacion:'',serial:'',modelo:'',fabricante:'',pais_origen:'',anio_fabricacion:'',registro_invima:'',categoria:'Monitoreo',estado:'Operativo',riesgo:'',proveedor:'',ultimoMtto:'',proximoMtto:'',contrato:''};
+  const [f,setF]=useState(eq||blank);
+  const s=(k,v)=>setF(p=>({...p,[k]:v}));
+
+  return(
+    <div className="overlay" onClick={e=>e.target===e.currentTarget&&close()}>
+      <div className="modal modal-lg">
+        <div className="modal-hdr">
+          <div className="modal-hdr-title">
+            <i className="ti ti-heart-rate-monitor"></i>
+            <span>{eq?'Editar equipo biomédico':'Registrar nuevo equipo biomédico'}</span>
+          </div>
+          <button className="btn-icon" onClick={close}><i className="ti ti-x"></i></button>
+        </div>
+        <div className="modal-body">
+
+          {/* Sección 1: Identificación */}
+          <div className="f-section"><i className="ti ti-tag"></i>Identificación del equipo</div>
+          <div className="two-col">
+            <div className="f-group"><label className="f-label">Nombre del equipo *</label><input className="f-input" value={f.nombre} onChange={e=>s('nombre',e.target.value)} placeholder="Ventilador Mecánico Puritan Bennett 840"/></div>
+            <div className="f-group"><label className="f-label">Código / N° Inventario *</label><input className="f-input" value={f.codigo} onChange={e=>s('codigo',e.target.value)} placeholder="VM-001" style={{fontFamily:'monospace'}}/></div>
+          </div>
+          <div className="two-col">
+            <div className="f-group"><label className="f-label">Modelo</label><input className="f-input" value={f.modelo||''} onChange={e=>s('modelo',e.target.value)} placeholder="Puritan Bennett 840"/></div>
+            <div className="f-group"><label className="f-label">Serial</label><input className="f-input" value={f.serial||''} onChange={e=>s('serial',e.target.value)} placeholder="PB840-2019-00341" style={{fontFamily:'monospace'}}/></div>
+          </div>
+          <div className="two-col">
+            <div className="f-group"><label className="f-label">Fabricante</label><input className="f-input" value={f.fabricante||''} onChange={e=>s('fabricante',e.target.value)} placeholder="Medtronic / GE Healthcare / Philips…"/></div>
+            <div className="f-group"><label className="f-label">País de origen</label><input className="f-input" value={f.pais_origen||''} onChange={e=>s('pais_origen',e.target.value)} placeholder="EE.UU / Alemania / Japón…"/></div>
+          </div>
+          <div className="two-col">
+            <div className="f-group"><label className="f-label">Año de fabricación</label><input className="f-input" type="number" value={f.anio_fabricacion||''} onChange={e=>s('anio_fabricacion',e.target.value)} placeholder="2020" min="1990" max="2030"/></div>
+            <div className="f-group"><label className="f-label">Registro INVIMA</label><input className="f-input" value={f.registro_invima||''} onChange={e=>s('registro_invima',e.target.value)} placeholder="2020DM-0012345" style={{fontFamily:'monospace'}}/></div>
+          </div>
+
+          {/* Sección 2: Ubicación */}
+          <div className="f-section"><i className="ti ti-map-pin"></i>Ubicación</div>
+          <div className="two-col">
+            <div className="f-group"><label className="f-label">Sede *</label><input className="f-input" value={f.sede||''} onChange={e=>s('sede',e.target.value)} placeholder="Sede Principal / Sede Norte / Sede Sur"/></div>
+            <div className="f-group"><label className="f-label">Ubicación dentro de la sede *</label><input className="f-input" value={f.ubicacion||''} onChange={e=>s('ubicacion',e.target.value)} placeholder="UCI Adultos - Piso 3 / Quirófano 2"/></div>
+          </div>
+
+          {/* Sección 3: Clasificación */}
+          <div className="f-section"><i className="ti ti-adjustments"></i>Clasificación biomédica</div>
+          <div className="three-col">
+            <div className="f-group"><label className="f-label">Categoría *</label>
+              <select className="f-select" value={f.categoria} onChange={e=>s('categoria',e.target.value)}>
+                {CATS.map(c=><option key={c}>{c}</option>)}
+              </select>
+            </div>
+            <div className="f-group"><label className="f-label">Estado actual *</label>
+              <select className="f-select" value={f.estado} onChange={e=>s('estado',e.target.value)}>
+                {ESTADOS.map(e=><option key={e}>{e}</option>)}
+              </select>
+            </div>
+            <div className="f-group"><label className="f-label">Riesgo (INVIMA)</label>
+              <select className="f-select" value={f.riesgo||''} onChange={e=>s('riesgo',e.target.value)}>
+                <option value="">Sin clasificar</option>
+                <option>Clase I — Bajo riesgo</option>
+                <option>Clase IIA — Riesgo moderado</option>
+                <option>Clase IIB — Alto riesgo</option>
+                <option>Clase III — Muy alto riesgo</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Sección 4: Mantenimiento */}
+          <div className="f-section"><i className="ti ti-tool"></i>Mantenimiento y contrato</div>
+          <div className="f-group"><label className="f-label">Proveedor de mantenimiento</label>
+            <select className="f-select" value={f.proveedor||''} onChange={e=>s('proveedor',e.target.value)}>
+              <option value="">Sin asignar</option>
+              {data.proveedores.map(p=><option key={p.id} value={p.nombre}>{p.nombre}</option>)}
+            </select>
+          </div>
+          <div className="two-col">
+            <div className="f-group"><label className="f-label">Último mantenimiento</label><input type="date" className="f-input" value={f.ultimoMtto||''} onChange={e=>s('ultimoMtto',e.target.value)}/></div>
+            <div className="f-group"><label className="f-label">Próximo mantenimiento</label><input type="date" className="f-input" value={f.proximoMtto||''} onChange={e=>s('proximoMtto',e.target.value)}/></div>
+          </div>
+          <div className="f-group"><label className="f-label">Contrato vinculado</label>
+            <select className="f-select" value={f.contrato||''} onChange={e=>s('contrato',e.target.value)}>
+              <option value="">Sin contrato</option>
+              {data.contratos.map(c=><option key={c.id} value={c.id}>{c.id} · {c.nombre.substring(0,45)}</option>)}
+            </select>
+          </div>
+        </div>
+        <div className="modal-ftr">
+          <button className="btn btn-secondary" onClick={close}>Cancelar</button>
+          <button className="btn btn-primary" onClick={()=>save(f)} disabled={!f.nombre||!f.codigo}>
+            <i className={`ti ${eq?'ti-device-floppy':'ti-plus'}`}></i>{eq?'Guardar cambios':'Registrar equipo'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── MODAL DETALLE EQUIPO ──────────────────────────────────────────────────────
+function MDetalleEq({eq,data,close,edit}){
+  const reps=data.reportes.filter(r=>r.equipo===eq.id);
+  const obs=data.observaciones.filter(o=>o.equipo===eq.id);
+  const d=eq.proximoMtto?daysTo(eq.proximoMtto):null;
+
+  const Row=({l,v,mono})=>(
+    <div className="detail-item">
+      <div className="dl">{l}</div>
+      <div className={`dv${mono?' mono':''}`} style={mono?{fontSize:12}:{}}>{v||<span style={{color:'var(--text3)'}}>—</span>}</div>
+    </div>
+  );
+
+  return(
+    <div className="overlay" onClick={e=>e.target===e.currentTarget&&close()}>
+      <div className="modal modal-lg">
+        <div className="modal-hdr">
+          <div className="modal-hdr-title">
+            <i className="ti ti-heart-rate-monitor"></i>
+            <span>{eq.nombre}</span>
+          </div>
+          <button className="btn-icon" onClick={close}><i className="ti ti-x"></i></button>
+        </div>
+        <div className="modal-body">
+          {/* Header badges */}
+          <div className="flex g8 mb16" style={{flexWrap:'wrap'}}>
+            <span className="mono" style={{fontSize:13,padding:'3px 8px',background:'var(--bg3)',borderRadius:'var(--radius)'}}>{eq.codigo}</span>
+            <span className={`badge ${estadoBadge(eq.estado)}`}><span className={`status-dot ${estadoColor(eq.estado)}`} style={{marginRight:4}}></span>{eq.estado}</span>
+            <span className="badge b-teal">{eq.categoria}</span>
+            {eq.riesgo&&<span className="badge b-purple"><i className="ti ti-alert-circle"></i>{eq.riesgo}</span>}
+            {eq.sede&&<span className="sede-tag"><i className="ti ti-building-hospital"></i>{eq.sede}</span>}
+          </div>
+
+          {/* Datos principales */}
+          <div style={{background:'var(--bg3)',borderRadius:'var(--radius)',padding:'14px',marginBottom:16}}>
+            <div className="detail-grid">
+              <Row l="Modelo" v={eq.modelo}/>
+              <Row l="Serial" v={eq.serial} mono/>
+              <Row l="Fabricante" v={eq.fabricante}/>
+              <Row l="País de origen" v={eq.pais_origen}/>
+              <Row l="Año de fabricación" v={eq.anio_fabricacion}/>
+              <Row l="Registro INVIMA" v={eq.registro_invima} mono/>
+              <Row l="Ubicación" v={eq.ubicacion}/>
+              <Row l="Proveedor Mtto" v={eq.proveedor}/>
+              <Row l="Contrato" v={eq.contrato} mono/>
+              <Row l="Último mantenimiento" v={eq.ultimoMtto}/>
+            </div>
+            {eq.proximoMtto&&(
+              <div style={{marginTop:12,paddingTop:10,borderTop:'1px solid var(--border)'}}>
+                <div className="dl" style={{marginBottom:4}}>Próximo mantenimiento</div>
+                <div className="flex ic g8">
+                  <span style={{fontWeight:500,color:'var(--text1)'}}>{eq.proximoMtto}</span>
+                  {d!==null&&<span className={`badge ${diasBadge(d)}`}>{d<0?'Vencido':d===0?'Hoy':`En ${d} días`}</span>}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Reportes */}
+          <div className="mb16">
+            <div style={{fontSize:12,color:'var(--text3)',marginBottom:8,textTransform:'uppercase',letterSpacing:'.5px',fontWeight:600}}>Reportes de mantenimiento ({reps.length})</div>
+            {reps.length===0?<p style={{fontSize:12,color:'var(--text3)',fontStyle:'italic'}}>Sin reportes registrados</p>:
+            reps.slice(0,4).map(r=>(
+              <div key={r.id} className="flex ic g8" style={{padding:'8px 10px',background:'var(--bg3)',borderRadius:'var(--radius)',marginBottom:6}}>
+                <i className="ti ti-file-type-pdf" style={{color:'var(--red2)',fontSize:17}}></i>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:12,color:'var(--text1)',fontWeight:500}}>{r.archivo}</div>
+                  <div style={{fontSize:11,color:'var(--text3)'}}>{r.fecha} · {r.tipo} · {r.proveedor}</div>
+                </div>
+                <span className={`badge ${r.estado==='Aprobado'?'b-green':'b-amber'}`}>{r.estado}</span>
+                {r.archivoUrl&&<a href={r.archivoUrl} target="_blank" rel="noreferrer" className="btn-icon" title="Abrir PDF"><i className="ti ti-external-link"></i></a>}
+              </div>
+            ))}
+          </div>
+
+          {/* Observaciones */}
+          {obs.length>0&&(
+            <div>
+              <div style={{fontSize:12,color:'var(--text3)',marginBottom:8,textTransform:'uppercase',letterSpacing:'.5px',fontWeight:600}}>Observaciones ({obs.length})</div>
+              {obs.slice(0,3).map(o=>(
+                <div key={o.id} className={`obs-card ${obsClass(o.tipo)}`}>
+                  <div className="obs-hdr"><span className="obs-autor">{o.autor}</span><span className="obs-date">{o.fecha}</span></div>
+                  <div className="obs-text">{o.texto}</div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+        <div className="modal-ftr">
+          <button className="btn btn-secondary" onClick={close}>Cerrar</button>
+          <button className="btn btn-primary" onClick={edit}><i className="ti ti-edit"></i>Editar equipo</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── CONTRATOS ─────────────────────────────────────────────────────────────────
+function Contratos({data}){
+  if(!data.contratos.length) return <div className="empty"><i className="ti ti-file-certificate"></i><p>No hay contratos registrados</p></div>;
+  return(
+    <div className="g2">
+      {data.contratos.map(c=>{
+        const eqs=data.equipos.filter(e=>(c.equipos||[]).includes(e.id));
+        const d=daysTo(c.fin);
+        const reps=data.reportes.filter(r=>r.contrato===c.id);
+        return(
+          <div key={c.id} className="card">
+            <div className="flex ic jb mb12">
+              <div>
+                <div style={{fontWeight:700,fontSize:14,color:'var(--text1)'}}>{c.nombre}</div>
+                <div className="mono" style={{marginTop:3,fontSize:11}}>{c.id}</div>
+              </div>
+              <span className={`badge ${c.estado==='Activo'?'b-green':'b-gray'}`}>{c.estado}</span>
+            </div>
+            <div className="divider" style={{margin:'10px 0'}}></div>
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,fontSize:12,marginBottom:12}}>
+              <div><div style={{color:'var(--text3)',fontSize:10,textTransform:'uppercase',letterSpacing:'.5px',marginBottom:3}}>Proveedor</div><div style={{color:'var(--text1)',fontWeight:500}}>{c.proveedor}</div></div>
+              <div><div style={{color:'var(--text3)',fontSize:10,textTransform:'uppercase',letterSpacing:'.5px',marginBottom:3}}>Tipo</div><div style={{color:'var(--text1)'}}>{c.tipo}</div></div>
+              <div><div style={{color:'var(--text3)',fontSize:10,textTransform:'uppercase',letterSpacing:'.5px',marginBottom:3}}>Vigencia</div><div style={{color:'var(--text1)'}}>{c.inicio} → {c.fin}</div></div>
+              <div><div style={{color:'var(--text3)',fontSize:10,textTransform:'uppercase',letterSpacing:'.5px',marginBottom:3}}>Valor anual</div><div style={{color:'var(--green2)',fontWeight:700,fontSize:14}}>{c.valor?fmtM(c.valor):'—'}</div></div>
+            </div>
+            <div style={{marginBottom:12}}>
+              <div style={{fontSize:10,color:'var(--text3)',textTransform:'uppercase',letterSpacing:'.5px',marginBottom:6}}>Equipos cubiertos ({eqs.length})</div>
+              <div className="flex g6" style={{flexWrap:'wrap'}}>
+                {eqs.length?eqs.map(e=><span key={e.id} className="badge b-teal">{e.codigo}</span>):<span style={{fontSize:11,color:'var(--text3)'}}>Sin equipos asignados</span>}
+              </div>
+            </div>
+            <div className="divider" style={{margin:'10px 0'}}></div>
+            <div className="flex ic jb">
+              <div className="flex ic g8">
+                <i className="ti ti-database" style={{color:'var(--green2)',fontSize:15}}></i>
+                <span style={{fontSize:11,color:'var(--text3)'}}>{reps.length} reportes · {reps.filter(r=>r.estado==='Aprobado').length} aprobados</span>
+              </div>
+              <span className={`badge ${d<0?'b-red':d<60?'b-amber':'b-green'}`}>{d<0?'Vencido':`${d}d restantes`}</span>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ── REPORTES ──────────────────────────────────────────────────────────────────
+function Reportes({data,setModal,aprobar}){
+  const [filter,setFilter]=useState('Todos');
+  const estados=['Todos','Pendiente revisión','Aprobado'];
+  const filtered=data.reportes.filter(r=>filter==='Todos'||r.estado===filter);
+  const pend=data.reportes.filter(r=>r.estado==='Pendiente revisión').length;
+
+  return(
+    <div>
+      <div className="chips">
+        {estados.map(e=>(
+          <div key={e} className={`chip${filter===e?' on':''}`} onClick={()=>setFilter(e)}>
+            {e}{e==='Pendiente revisión'&&pend>0&&<span style={{marginLeft:5,background:'var(--amber)',color:'#000',borderRadius:10,padding:'1px 6px',fontSize:10,fontWeight:700}}>{pend}</span>}
+          </div>
+        ))}
+      </div>
+      <div className="card">
+        <div className="tbl-wrap">
+          <table className="tbl">
+            <thead>
+              <tr><th>ID</th><th>Equipo</th><th>Sede</th><th>Proveedor</th><th>Fecha</th><th>Tipo</th><th>Archivo</th><th>Estado</th><th></th></tr>
+            </thead>
+            <tbody>
+              {filtered.map(r=>{
+                const eq=data.equipos.find(e=>e.id===r.equipo);
+                return(
+                  <tr key={r.id}>
+                    <td><span className="mono">{r.id}</span></td>
+                    <td>
+                      <div style={{fontWeight:500,color:'var(--text1)',fontSize:12}}>{eq?.nombre?.substring(0,30)||r.equipo}</div>
+                      <div className="mono" style={{fontSize:11}}>{eq?.codigo}</div>
+                    </td>
+                    <td>{eq?.sede?<span className="sede-tag" style={{fontSize:10}}><i className="ti ti-building-hospital"></i>{eq.sede}</span>:'—'}</td>
+                    <td style={{fontSize:12}}>{r.proveedor||'—'}</td>
+                    <td style={{fontSize:12,whiteSpace:'nowrap'}}>{r.fecha}</td>
+                    <td><span className={`badge ${r.tipo==='Preventivo'?'b-blue':r.tipo==='Correctivo'?'b-red':r.tipo==='Calibración'?'b-purple':'b-gray'}`}>{r.tipo}</span></td>
+                    <td>
+                      <div className="flex ic g6">
+                        <i className="ti ti-file-type-pdf" style={{color:'var(--red2)',fontSize:15}}></i>
+                        {r.archivoUrl
+                          ?<a href={r.archivoUrl} target="_blank" rel="noreferrer" style={{fontSize:11,color:'var(--accent3)',textDecoration:'none'}}>{r.archivo}</a>
+                          :<span style={{fontSize:11,color:'var(--text3)'}}>{r.archivo||'—'}</span>}
+                      </div>
+                    </td>
+                    <td><span className={`badge ${r.estado==='Aprobado'?'b-green':'b-amber'}`}>{r.estado}</span></td>
+                    <td>
+                      <div className="flex g6" style={{justifyContent:'flex-end'}}>
+                        <button className="btn-icon" title="Ver reporte" onClick={()=>setModal({t:'rep',rep:r})}><i className="ti ti-eye"></i></button>
+                        {r.estado!=='Aprobado'&&<button className="btn-icon icon-success" title="Aprobar" onClick={()=>aprobar(r.id)}><i className="ti ti-check"></i></button>}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+          {filtered.length===0&&<div className="empty"><i className="ti ti-clipboard-list"></i><p>No hay reportes</p><span>{filter!=='Todos'?'Prueba cambiando el filtro':'Carga el primer reporte'}</span></div>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── MODAL UPLOAD REPORTE ──────────────────────────────────────────────────────
+function MUpload({data,close,save}){
+  const [f,setF]=useState({contrato:'',equipo:'',fecha:new Date().toISOString().split('T')[0],tipo:'Preventivo',archivo:null,notas:''});
+  const [prog,setProg]=useState(0);
+  const [upl,setUpl]=useState(false);
+  const [done,setDone]=useState(false);
+  const [drag,setDrag]=useState(false);
+  const ref=useRef();
+
+  const ct=data.contratos.find(c=>c.id===f.contrato);
+  const eqs=ct?data.equipos.filter(e=>(ct.equipos||[]).includes(e.id)):[];
+
+  const handleFile=file=>{
+    if(!file)return;
+    setF(p=>({...p,archivo:file}));setUpl(true);setProg(0);
+    let p=0;const iv=setInterval(()=>{p+=Math.random()*35;if(p>=100){p=100;clearInterval(iv);setUpl(false);setDone(true)}setProg(Math.min(p,100))},180);
+  };
+
+  return(
+    <div className="overlay" onClick={e=>e.target===e.currentTarget&&close()}>
+      <div className="modal">
+        <div className="modal-hdr">
+          <div className="modal-hdr-title"><i className="ti ti-upload"></i><span>Cargar Reporte de Mantenimiento</span></div>
+          <button className="btn-icon" onClick={close}><i className="ti ti-x"></i></button>
+        </div>
+        <div className="modal-body">
+          <div className="two-col">
+            <div className="f-group"><label className="f-label">Contrato *</label>
+              <select className="f-select" value={f.contrato} onChange={e=>setF(p=>({...p,contrato:e.target.value,equipo:''}))}>
+                <option value="">Seleccionar contrato…</option>
+                {data.contratos.map(c=><option key={c.id} value={c.id}>{c.id} · {c.proveedor}</option>)}
+              </select>
+            </div>
+            <div className="f-group"><label className="f-label">Equipo *</label>
+              <select className="f-select" value={f.equipo} onChange={e=>setF(p=>({...p,equipo:e.target.value}))} disabled={!f.contrato}>
+                <option value="">Seleccionar equipo…</option>
+                {eqs.map(e=><option key={e.id} value={e.id}>{e.codigo} · {e.nombre.substring(0,30)}</option>)}
+              </select>
+            </div>
+          </div>
+          <div className="two-col">
+            <div className="f-group"><label className="f-label">Fecha del servicio *</label><input type="date" className="f-input" value={f.fecha} onChange={e=>setF(p=>({...p,fecha:e.target.value}))}/></div>
+            <div className="f-group"><label className="f-label">Tipo de mantenimiento</label>
+              <select className="f-select" value={f.tipo} onChange={e=>setF(p=>({...p,tipo:e.target.value}))}>
+                {TIPOS_MTTO.map(t=><option key={t}>{t}</option>)}
+              </select>
+            </div>
+          </div>
+          <div className="f-group">
+            <label className="f-label">Archivo del reporte (PDF) *</label>
+            <div className={`upload-zone${drag?' drag':''}`}
+              onClick={()=>ref.current.click()}
+              onDragOver={e=>{e.preventDefault();setDrag(true)}}
+              onDragLeave={()=>setDrag(false)}
+              onDrop={e=>{e.preventDefault();setDrag(false);handleFile(e.dataTransfer.files[0])}}>
+              <input ref={ref} type="file" accept=".pdf,.doc,.docx" style={{display:'none'}} onChange={e=>handleFile(e.target.files[0])}/>
+              {!f.archivo?<>
+                <i className="ti ti-cloud-upload uz-icon"></i>
+                <p>Arrastra el PDF aquí o haz clic para seleccionar</p>
+                <span>PDF, DOC hasta 20MB · Se guardará en Supabase Storage</span>
+              </>:(
+                <div className="file-row">
+                  <i className="ti ti-file-type-pdf" style={{color:'var(--red2)',fontSize:22}}></i>
+                  <div style={{flex:1}}>
+                    <p className="file-info-name">{f.archivo.name}</p>
+                    <span>{(f.archivo.size/1024).toFixed(1)} KB</span>
+                    {upl&&<div className="prog-bar"><div className="prog-fill" style={{width:`${prog}%`}}></div></div>}
+                    {done&&<div style={{fontSize:11,color:'var(--green2)',marginTop:4}}><i className="ti ti-check"></i> Listo para guardar</div>}
+                  </div>
+                  {done&&<i className="ti ti-circle-check" style={{color:'var(--green2)',fontSize:20}}></i>}
+                </div>
+              )}
+            </div>
+          </div>
+          <div className="f-group">
+            <label className="f-label">Observaciones / trabajos realizados</label>
+            <textarea className="f-textarea" placeholder="Describa los trabajos realizados, hallazgos, repuestos utilizados, recomendaciones…" value={f.notas} onChange={e=>setF(p=>({...p,notas:e.target.value}))}></textarea>
+          </div>
+        </div>
+        <div className="modal-ftr">
+          <button className="btn btn-secondary" onClick={close}>Cancelar</button>
+          <button className="btn btn-primary" onClick={()=>{if(f.contrato&&f.equipo&&f.archivo)save(f)}} disabled={!f.contrato||!f.equipo||!f.archivo}>
+            <i className="ti ti-upload"></i>Guardar reporte
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── MODAL VER REPORTE ─────────────────────────────────────────────────────────
+function MReporte({rep,data,close,aprobar,saveObs}){
+  const eq=data.equipos.find(e=>e.id===rep.equipo);
+  const obs=data.observaciones.filter(o=>o.reporte===rep.id);
+  const [autor,setAutor]=useState('');
+  const [texto,setTexto]=useState('');
+  const [tipo,setTipo]=useState('Comentario');
+
+  const guardar=()=>{
+    if(!texto||!autor)return;
+    saveObs({equipo:rep.equipo,reporte:rep.id,autor,texto,tipo});
+    setTexto('');setAutor('');
+  };
+
+  return(
+    <div className="overlay" onClick={e=>e.target===e.currentTarget&&close()}>
+      <div className="modal">
+        <div className="modal-hdr">
+          <div className="modal-hdr-title">
+            <i className="ti ti-clipboard-list"></i>
+            <span>Reporte {rep.id}</span>
+            <span className={`badge ${rep.estado==='Aprobado'?'b-green':'b-amber'}`}>{rep.estado}</span>
+          </div>
+          <button className="btn-icon" onClick={close}><i className="ti ti-x"></i></button>
+        </div>
+        <div className="modal-body">
+          <div style={{background:'var(--bg3)',borderRadius:'var(--radius)',padding:'13px',marginBottom:14}}>
+            <div className="detail-grid">
+              <div className="detail-item"><div className="dl">Equipo</div><div className="dv" style={{fontSize:12}}>{eq?.nombre?.substring(0,35)||rep.equipo}</div></div>
+              <div className="detail-item"><div className="dl">Código / Serial</div><div className="dv mono">{eq?.codigo}{eq?.serial?` · ${eq.serial}`:''}</div></div>
+              <div className="detail-item"><div className="dl">Sede</div><div>{eq?.sede?<span className="sede-tag"><i className="ti ti-building-hospital"></i>{eq.sede}</span>:'—'}</div></div>
+              <div className="detail-item"><div className="dl">Ubicación</div><div className="dv" style={{fontSize:12}}>{eq?.ubicacion||'—'}</div></div>
+              <div className="detail-item"><div className="dl">Proveedor</div><div className="dv">{rep.proveedor||'—'}</div></div>
+              <div className="detail-item"><div className="dl">Fecha</div><div className="dv">{rep.fecha}</div></div>
+              <div className="detail-item"><div className="dl">Tipo</div><div><span className={`badge ${rep.tipo==='Preventivo'?'b-blue':rep.tipo==='Correctivo'?'b-red':'b-purple'}`}>{rep.tipo}</span></div></div>
+              <div className="detail-item"><div className="dl">Contrato</div><div className="dv mono">{rep.contrato}</div></div>
+            </div>
+          </div>
+
+          <div className="mb14">
+            <div style={{fontSize:11,color:'var(--text3)',textTransform:'uppercase',letterSpacing:'.5px',marginBottom:7}}>Archivo</div>
+            <div className="file-row">
+              <i className="ti ti-file-type-pdf" style={{color:'var(--red2)',fontSize:20}}></i>
+              <div style={{flex:1}}>
+                <div style={{fontSize:13,fontWeight:500,color:'var(--text1)'}}>{rep.archivo||'Sin archivo'}</div>
+                <div style={{fontSize:11,color:'var(--text3)'}}>Supabase Storage · reportes-pdf</div>
+              </div>
+              {rep.archivoUrl?<a href={rep.archivoUrl} target="_blank" rel="noreferrer" className="btn btn-secondary btn-sm"><i className="ti ti-external-link"></i>Abrir PDF</a>:<span style={{fontSize:11,color:'var(--text3)'}}>Sin URL</span>}
+            </div>
+          </div>
+
+          {rep.notas&&(
+            <div className="mb14">
+              <div style={{fontSize:11,color:'var(--text3)',textTransform:'uppercase',letterSpacing:'.5px',marginBottom:7}}>Notas del servicio</div>
+              <div style={{fontSize:13,color:'var(--text2)',background:'var(--bg3)',borderRadius:'var(--radius)',padding:'11px 13px',borderLeft:'3px solid var(--accent)',lineHeight:1.55}}>{rep.notas}</div>
+            </div>
+          )}
+
+          {obs.length>0&&(
+            <div className="mb14">
+              <div style={{fontSize:11,color:'var(--text3)',textTransform:'uppercase',letterSpacing:'.5px',marginBottom:8}}>Observaciones ({obs.length})</div>
+              {obs.map(o=>(
+                <div key={o.id} className={`obs-card ${obsClass(o.tipo)}`}>
+                  <div className="obs-hdr"><span className="obs-autor">{o.autor}</span><span className="obs-date">{o.fecha}</span></div>
+                  <div className="obs-text">{o.texto}</div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="divider"></div>
+          <div style={{fontSize:11,color:'var(--text3)',textTransform:'uppercase',letterSpacing:'.5px',marginBottom:8}}>Agregar observación</div>
+          <div className="two-col mb8">
+            <input className="f-input" placeholder="Tu nombre y cargo" value={autor} onChange={e=>setAutor(e.target.value)}/>
+            <select className="f-select" value={tipo} onChange={e=>setTipo(e.target.value)}>
+              {TIPOS_OBS.map(t=><option key={t}>{t}</option>)}
+            </select>
+          </div>
+          <textarea className="f-textarea" style={{minHeight:70,marginBottom:8}} placeholder="Escribe tu observación, aprobación o seguimiento…" value={texto} onChange={e=>setTexto(e.target.value)}></textarea>
+          <button className="btn btn-secondary btn-sm" onClick={guardar} disabled={!texto||!autor}><i className="ti ti-send"></i>Agregar</button>
+        </div>
+        <div className="modal-ftr">
+          <button className="btn btn-secondary" onClick={close}>Cerrar</button>
+          {rep.estado!=='Aprobado'&&<button className="btn btn-success" onClick={()=>{aprobar(rep.id);close()}}><i className="ti ti-check"></i>Aprobar reporte</button>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── OBSERVACIONES ─────────────────────────────────────────────────────────────
+function Observaciones({data,setModal}){
+  const [filter,setFilter]=useState('Todos');
+  const tipos=['Todos',...TIPOS_OBS];
+  const filtered=data.observaciones.filter(o=>filter==='Todos'||o.tipo===filter);
+
+  return(
+    <div>
+      <div className="chips">
+        {tipos.map(t=>(
+          <div key={t} className={`chip${filter===t?' on':''}`} onClick={()=>setFilter(t)}>
+            {t}
+            {t==='Alerta'&&data.observaciones.filter(o=>o.tipo==='Alerta').length>0&&
+              <span style={{marginLeft:5,background:'var(--red)',color:'#fff',borderRadius:10,padding:'1px 6px',fontSize:10}}>{data.observaciones.filter(o=>o.tipo==='Alerta').length}</span>}
+          </div>
+        ))}
+      </div>
+      {filtered.length===0&&<div className="empty"><i className="ti ti-message-2"></i><p>No hay observaciones</p><span>Registra la primera observación</span></div>}
+      {filtered.map(o=>{
+        const eq=data.equipos.find(e=>e.id===o.equipo);
+        return(
+          <div key={o.id} className={`obs-card ${obsClass(o.tipo)}`}>
+            <div className="obs-hdr">
+              <div className="flex ic g8">
+                <span className={`badge ${o.tipo==='Alerta'?'b-red':o.tipo==='Aprobación'?'b-green':o.tipo==='Seguimiento'?'b-amber':'b-teal'}`}>{o.tipo}</span>
+                <span className="obs-autor">{o.autor}</span>
+              </div>
+              <span className="obs-date">{o.fecha}</span>
+            </div>
+            <div className="obs-text">{o.texto}</div>
+            <div className="obs-meta">
+              <span><i className="ti ti-heart-rate-monitor" style={{fontSize:11,marginRight:3}}></i>{eq?.nombre||o.equipo}{eq?` (${eq.codigo})`:''}</span>
+              {eq?.sede&&<span><i className="ti ti-building-hospital" style={{fontSize:11,marginRight:3}}></i>{eq.sede}</span>}
+              {o.reporte&&<span><i className="ti ti-clipboard-list" style={{fontSize:11,marginRight:3}}></i>Reporte {o.reporte}</span>}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ── MODAL OBSERVACION ─────────────────────────────────────────────────────────
+function MObs({data,close,save}){
+  const [f,setF]=useState({equipo:'',reporte:null,autor:'',texto:'',tipo:'Comentario'});
+
+  return(
+    <div className="overlay" onClick={e=>e.target===e.currentTarget&&close()}>
+      <div className="modal">
+        <div className="modal-hdr">
+          <div className="modal-hdr-title"><i className="ti ti-message-2"></i><span>Nueva Observación</span></div>
+          <button className="btn-icon" onClick={close}><i className="ti ti-x"></i></button>
+        </div>
+        <div className="modal-body">
+          <div className="two-col">
+            <div className="f-group"><label className="f-label">Equipo *</label>
+              <select className="f-select" value={f.equipo} onChange={e=>setF(p=>({...p,equipo:e.target.value}))}>
+                <option value="">Seleccionar equipo…</option>
+                {data.equipos.map(e=><option key={e.id} value={e.id}>{e.codigo} · {e.nombre.substring(0,25)}</option>)}
+              </select>
+            </div>
+            <div className="f-group"><label className="f-label">Reporte asociado</label>
+              <select className="f-select" value={f.reporte||''} onChange={e=>setF(p=>({...p,reporte:e.target.value||null}))}>
+                <option value="">Sin reporte</option>
+                {data.reportes.filter(r=>!f.equipo||r.equipo===f.equipo).map(r=><option key={r.id} value={r.id}>{r.id} · {r.fecha} · {r.tipo}</option>)}
+              </select>
+            </div>
+          </div>
+          <div className="two-col">
+            <div className="f-group"><label className="f-label">Autor *</label><input className="f-input" value={f.autor} onChange={e=>setF(p=>({...p,autor:e.target.value}))} placeholder="Nombre y cargo"/></div>
+            <div className="f-group"><label className="f-label">Tipo</label>
+              <select className="f-select" value={f.tipo} onChange={e=>setF(p=>({...p,tipo:e.target.value}))}>
+                {TIPOS_OBS.map(t=><option key={t}>{t}</option>)}
+              </select>
+            </div>
+          </div>
+          <div className="f-group"><label className="f-label">Observación *</label><textarea className="f-textarea" style={{minHeight:100}} placeholder="Describe la observación en detalle…" value={f.texto} onChange={e=>setF(p=>({...p,texto:e.target.value}))}></textarea></div>
+        </div>
+        <div className="modal-ftr">
+          <button className="btn btn-secondary" onClick={close}>Cancelar</button>
+          <button className="btn btn-primary" onClick={()=>save(f)} disabled={!f.equipo||!f.autor||!f.texto}><i className="ti ti-check"></i>Registrar observación</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── DRIVE / STORAGE ───────────────────────────────────────────────────────────
+function Drive({data}){
+  const [files,setFiles]=useState([]);
+  const [loading,setLoading]=useState(true);
+  const [exp,setExp]=useState({});
+
+  useEffect(()=>{
+    db.storage.from('reportes-pdf').list('',{limit:200,sortBy:{column:'created_at',order:'desc'}})
+      .then(({data:d})=>{setFiles(d||[]);setLoading(false)}).catch(()=>setLoading(false));
+  },[]);
+
+  const toggle=k=>setExp(e=>({...e,[k]:!e[k]}));
+  const totalSize=files.reduce((s,f)=>s+(f.metadata?.size||0),0);
+
+  return(
+    <div className="g2">
+      {/* Árbol de carpetas */}
+      <div className="card">
+        <div className="card-hdr">
+          <span className="card-title"><i className="ti ti-database" style={{color:'var(--green2)'}}></i>Archivos por contrato</span>
+          <span style={{fontSize:11,color:'var(--text3)'}}>{files.length} archivos totales</span>
+        </div>
+        <div>
+          <div className="drive-folder-row" style={{cursor:'default',marginBottom:4}}>
+            <i className="ti ti-folder" style={{color:'var(--accent2)',fontSize:16}}></i>
+            <span style={{fontSize:13,color:'var(--text1)',fontWeight:600}}>reportes-pdf (Supabase Storage)</span>
+          </div>
+          {data.contratos.map(c=>{
+            const reps=data.reportes.filter(r=>r.contrato===c.id);
+            return(
+              <div key={c.id} className="sub-folder">
+                <div className="drive-folder-row" onClick={()=>toggle(c.id)}>
+                  <i className={`ti ${exp[c.id]?'ti-folder-open':'ti-folder'}`} style={{color:'var(--amber)',fontSize:15}}></i>
+                  <span style={{fontSize:12,color:'var(--text1)',flex:1}}>{c.id} · {c.proveedor}</span>
+                  <span className="badge b-blue" style={{fontSize:10,padding:'2px 6px'}}>{reps.length}</span>
+                  <i className={`ti ${exp[c.id]?'ti-chevron-down':'ti-chevron-right'}`} style={{fontSize:12,color:'var(--text3)',marginLeft:4}}></i>
+                </div>
+                {exp[c.id]&&(
+                  <div className="sub-folder">
+                    {reps.length===0?<div style={{fontSize:11,color:'var(--text3)',padding:'4px 8px',fontStyle:'italic'}}>Sin reportes cargados</div>:
+                    reps.map(r=>{
+                      const eq=data.equipos.find(e=>e.id===r.equipo);
+                      return(
+                        <div key={r.id} className="drive-folder-row">
+                          <i className="ti ti-file-type-pdf" style={{color:'var(--red2)',fontSize:14}}></i>
+                          <div style={{flex:1}}>
+                            {r.archivoUrl
+                              ?<a href={r.archivoUrl} target="_blank" rel="noreferrer" style={{fontSize:12,color:'var(--accent3)',textDecoration:'none'}}>{r.archivo}</a>
+                              :<span style={{fontSize:12,color:'var(--text3)'}}>{r.archivo}</span>}
+                            <div style={{fontSize:10,color:'var(--text3)'}}>{eq?.codigo||'—'} · {r.fecha} · {r.tipo}</div>
+                          </div>
+                          <span className={`badge ${r.estado==='Aprobado'?'b-green':'b-amber'}`} style={{fontSize:9,padding:'2px 6px'}}>{r.estado}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Panel derecho */}
+      <div style={{display:'flex',flexDirection:'column',gap:16}}>
+        {/* Stats */}
+        <div className="card">
+          <div className="card-hdr"><span className="card-title"><i className="ti ti-chart-pie" style={{color:'var(--accent2)'}}></i>Estadísticas de archivos</span></div>
+          <div style={{display:'grid',gap:8}}>
+            {[
+              {l:'Total de archivos PDF', v:loading?'…':files.length,                                         i:'ti-files',     c:'var(--accent2)'},
+              {l:'Espacio utilizado',     v:loading?'…':totalSize>0?`${(totalSize/1024).toFixed(0)} KB`:'0 KB',i:'ti-database',  c:'var(--purple2)'},
+              {l:'Reportes pendientes',   v:data.reportes.filter(r=>r.estado==='Pendiente revisión').length,   i:'ti-clock',     c:'var(--amber2)'},
+              {l:'Reportes aprobados',    v:data.reportes.filter(r=>r.estado==='Aprobado').length,             i:'ti-circle-check',c:'var(--green2)'},
+              {l:'Total observaciones',   v:data.observaciones.length,                                         i:'ti-message-2', c:'var(--accent2)'},
+            ].map(s=>(
+              <div key={s.l} className="flex ic g8" style={{padding:'9px 11px',background:'var(--bg3)',borderRadius:'var(--radius)'}}>
+                <i className={`ti ${s.i}`} style={{color:s.c,fontSize:16,width:18,flexShrink:0}}></i>
+                <span style={{fontSize:12,color:'var(--text2)',flex:1}}>{s.l}</span>
+                <span style={{fontSize:13,fontWeight:600,color:'var(--text1)'}}>{s.v}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Archivos recientes */}
+        <div className="card" style={{flex:1}}>
+          <div className="card-hdr"><span className="card-title"><i className="ti ti-clock" style={{color:'var(--accent2)'}}></i>Archivos recientes</span></div>
+          {loading?<div style={{textAlign:'center',padding:24}}><div className="spinner" style={{margin:'0 auto'}}></div></div>:
+           files.length===0?<div className="empty"><i className="ti ti-files"></i><p>Sin archivos aún</p><span>Carga el primer reporte</span></div>:
+           files.slice(0,8).map(f=>(
+            <div key={f.name} className="drive-row">
+              <i className="ti ti-file-type-pdf" style={{color:'var(--red2)',fontSize:16}}></i>
+              <span style={{fontSize:12,color:'var(--text2)',flex:1,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{f.name}</span>
+              <span style={{fontSize:11,color:'var(--text3)',flexShrink:0}}>{f.metadata?.size?`${(f.metadata.size/1024).toFixed(0)}KB`:''}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.render(<App/>,document.getElementById('root'));
+</script>
+</body>
+</html>
